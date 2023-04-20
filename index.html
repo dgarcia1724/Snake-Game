@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Work</title>
+    <style>
+      #snakeBoard {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .text {
+        margin-top: 100px;
+        color: white;
+        text-align: center;
+
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="text">
+      <h1>Snake Score:</h1>
+      <h2 id="score"></h2>
+    </div>
+    <canvas id="snakeBoard" width="400" height="400"></canvas>
+
+    <script>
+      document.body.style.backgroundColor = "black";
+      const snakeBoard = document.getElementById("snakeBoard");
+      const snakeBoard2d = snakeBoard.getContext("2d");
+      const score = document.getElementById("score");
+
+      let snake = [
+        { x: 200, y: 200 },
+        { x: 190, y: 200 },
+        { x: 180, y: 200 },
+        { x: 170, y: 200 },
+        { x: 160, y: 200 },
+      ];
+
+      let dx = 10;
+      let dy = 0;
+      let pause = false;
+      let currentScore = 0;
+      score.innerHTML = currentScore;
+
+      function main() {
+        pause = false;
+
+        if (gameOver()) return;
+
+        setTimeout(function () {
+          displayBoard();
+          displayApple();
+          moveSnake();
+          displaySnake();
+          main();
+        }, 100);
+      }
+
+      main();
+      generateApple();
+
+      function displayBoard() {
+        snakeBoard2d.fillStyle = "cyan";
+        snakeBoard2d.strokeStyle = "cyan";
+        snakeBoard2d.fillRect(0, 0, snakeBoard.width, snakeBoard.height);
+        snakeBoard2d.strokeRect(0, 0, snakeBoard.width, snakeBoard.height);
+      }
+
+      function buildSnakePart(snakePart) {
+        snakeBoard2d.fillStyle = "lightgreen";
+        snakeBoard2d.strokeStyle = "green";
+        snakeBoard2d.fillRect(snakePart.x, snakePart.y, 10, 10);
+        snakeBoard2d.strokeRect(snakePart.x, snakePart.y, 10, 10);
+      }
+
+      function displaySnake() {
+        snake.forEach(buildSnakePart);
+      }
+
+      function moveSnake() {
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        snake.unshift(head);
+        // GROW
+        if (snake[0].x === appleX && snake[0].y === appleY) {
+          currentScore += 10;
+          score.innerHTML = currentScore;
+          generateApple();
+        } else {
+          snake.pop();
+        }
+      }
+
+      function controlSnake(event) {
+        if (pause) return;
+        pause = true;
+
+        const leftKey = 37;
+        const upKey = 38;
+        const rightKey = 39;
+        const bottomKey = 40;
+
+        const movingLeft = dx === -10;
+        const movingUp = dy === -10;
+        const movingRight = dx === 10;
+        const movingDown = dy === 10;
+
+        if (event.keyCode === leftKey && !movingRight) {
+          dx = -10;
+          dy = 0;
+        }
+        if (event.keyCode === upKey && !movingDown) {
+          dx = 0;
+          dy = -10;
+        }
+        if (event.keyCode === rightKey && !movingLeft) {
+          dx = 10;
+          dy = 0;
+        }
+        if (event.keyCode === bottomKey && !movingUp) {
+          dx = 0;
+          dy = 10;
+        }
+      }
+
+      document.addEventListener("keydown", controlSnake);
+
+      function gameOver() {
+        for (let i = 1; i < snake.length; i++) {
+          if (snake[i].x === snake[0].x && snake[i].y === snake[0].y)
+            return true;
+        }
+
+        // 4 walls
+        const hitLeft = snake[0].x < 0;
+        const hitUp = snake[0].y < 0;
+        const hitRight = snake[0].x > 390;
+        const hitBottom = snake[0].y > 390;
+
+        return hitLeft || hitUp || hitRight || hitBottom;
+      }
+
+      function generateApple() {
+        appleX = Math.round((Math.random() * 390) / 10) * 10;
+        appleY = Math.round((Math.random() * 390) / 10) * 10;
+
+        snake.forEach(function (snakePart) {
+          if (snakePart.x === appleX && snakePart.y === appleY) {
+            generateApple();
+          }
+        });
+      }
+
+      function displayApple() {
+        snakeBoard2d.fillStyle = "red";
+        snakeBoard2d.strokeStyle = "red";
+        snakeBoard2d.fillRect(appleX, appleY, 10, 10);
+        snakeBoard2d.strokeRect(appleX, appleY, 10, 10);
+      }
+    </script>
+  </body>
+</html>
